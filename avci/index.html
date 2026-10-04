@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>KKTC Avcı Sınavı Çalışma Kartları</title>
+<style>
+:root {
+  --bg:#0e1710; --panel:#162019; --panel2:#1e2b21; --text:#f3f5ef; --muted:#abb8ad;
+  --accent:#d9b45b; --good:#79c78a; --bad:#e87979; --line:#2f3b32;
+}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,#0d1710,#101811 45%,#0a120c);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;min-height:100vh}
+.wrap{max-width:860px;margin:auto;padding:18px 16px 42px}
+header{display:flex;gap:14px;align-items:center;margin-bottom:18px}
+.logo{width:54px;height:54px;border-radius:16px;display:grid;place-items:center;background:var(--accent);color:#17130a;font-size:28px;font-weight:900;box-shadow:0 8px 30px #0006}
+h1{font-size:22px;margin:0 0 3px} .sub{font-size:13px;color:var(--muted)}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0}
+button{font:inherit}
+.tab,.btn{border:1px solid var(--line);background:var(--panel);color:var(--text);padding:11px 14px;border-radius:12px;cursor:pointer}
+.tab.active{background:var(--accent);color:#17130a;border-color:var(--accent);font-weight:800}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
+.stat b{font-size:18px;display:block} .stat span{font-size:12px;color:var(--muted)}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.btn.small{font-size:13px;padding:9px 11px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:20px;min-height:335px;padding:24px;display:flex;flex-direction:column;justify-content:center;box-shadow:0 16px 50px #0005;position:relative;overflow:hidden}
+.card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--accent)}
+.num{position:absolute;top:15px;right:18px;color:var(--muted);font-size:12px}
+.label{color:var(--accent);text-transform:uppercase;letter-spacing:.12em;font-size:12px;font-weight:800;margin-bottom:14px}
+.question{font-size:25px;line-height:1.28;font-weight:800}
+.answer{font-size:20px;line-height:1.45;display:none}
+.bg{margin-top:14px;border-top:1px solid var(--line);padding-top:12px;color:#d4ddd5;font-size:14px;display:none}
+.card.revealed .question{display:none} .card.revealed .answer,.card.revealed .bg{display:block}
+.card-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}
+.know{background:#18351f;border-color:#315b3b} .dont{background:#3a1d1d;border-color:#643535}
+.primary{background:var(--accent);color:#17130a;border-color:var(--accent);font-weight:800}
+.note{margin-top:18px;background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:14px;color:var(--muted);font-size:13px;line-height:1.5}
+.hidden{display:none!important}
+.quizBox{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px}
+.quizQ{font-size:21px;font-weight:800;line-height:1.35;margin:5px 0 16px}
+.option{display:block;width:100%;text-align:left;margin:8px 0;padding:13px 14px;border:1px solid var(--line);background:#111a13;color:var(--text);border-radius:12px;cursor:pointer}
+.option.correct{border-color:var(--good);background:#17331e}
+.option.wrong{border-color:var(--bad);background:#391b1b}
+.quizMeta{display:flex;justify-content:space-between;color:var(--muted);font-size:13px;margin-bottom:10px}
+.result{font-size:18px;margin:12px 0}
+.progress{height:7px;background:#0b120d;border-radius:99px;overflow:hidden;margin:12px 0 16px}
+.progress>div{height:100%;background:var(--accent);width:0}
+.footer{text-align:center;color:var(--muted);font-size:12px;margin-top:22px}
+@media(max-width:560px){.question{font-size:22px}.answer{font-size:18px}.card{min-height:365px;padding:22px 20px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="logo">✦</div>
+  <div><h1>KKTC Avcı Sınavı</h1><div class="sub">Avcı Eğitim Komisyonu Atanma ve Avcı Eğitimi Tüzüğü • hızlı tekrar</div></div>
+</header>
+
+<div class="tabs">
+  <button class="tab active" id="tabCards">Kartlar</button>
+  <button class="tab" id="tabQuiz">Deneme Testi</button>
+</div>
+
+<section id="cardsView">
+  <div class="stats">
+    <div class="stat"><b id="sTotal">0</b><span>Toplam</span></div>
+    <div class="stat"><b id="sKnown">0</b><span>Biliyorum</span></div>
+    <div class="stat"><b id="sUnknown">0</b><span>Tekrar et</span></div>
+  </div>
+  <div class="toolbar">
+    <button class="btn small" id="shuffle">Karıştır</button>
+    <button class="btn small" id="filterUnknown">Sadece bilmediklerim</button>
+    <button class="btn small" id="reset">İlerlemeyi sıfırla</button>
+  </div>
+  <div class="card" id="card" role="button" aria-label="Kartı çevir">
+    <div class="num" id="num"></div>
+    <div class="label" id="label">SORU</div>
+    <div class="question" id="question"></div>
+    <div class="answer" id="answer"></div>
+    <div class="bg" id="bg"></div>
+  </div>
+  <div class="card-actions">
+    <button class="btn dont" id="dont">Tekrar et</button>
+    <button class="btn primary" id="flip">Cevabı göster</button>
+    <button class="btn know" id="know">Biliyorum</button>
+  </div>
+</section>
+
+<section id="quizView" class="hidden">
+  <div class="quizBox">
+    <div class="quizMeta"><span id="quizCount"></span><span id="quizScore"></span></div>
+    <div class="progress"><div id="quizProgress"></div></div>
+    <div class="quizQ" id="quizQ"></div>
+    <div id="quizOptions"></div>
+    <div class="result" id="quizResult"></div>
+    <button class="btn primary hidden" id="quizNext">Sonraki soru</button>
+    <button class="btn primary hidden" id="quizRestart">Yeni 20 soruluk test</button>
+  </div>
+</section>
+
+<div class="note">
+  <b>Kaynak:</b> KKTC “Avcı Eğitim Komisyonu Atanma ve Avcı Eğitimi Tüzüğü”, 23.08.2025 değişiklikleriyle birleştirilmiş metin.
+  Bu çalışma sayfası özellikle yarınki sınav öncesi hızlı tekrar için hazırlandı. Resmî metin her zaman önceliklidir.
+</div>
+<div class="footer">İlerleme bu cihazda otomatik kaydedilir.</div>
+</div>
+
+<script>
+const cards = [{"q": "“Avcı Adayı” kimdir?", "a": "21 yaşını doldurmuş, av ruhsatı almaya engeli bulunmayan K.K.T.C. vatandaşıdır.", "bg": "Кандидат за ловец е гражданин на ККТР, навършил 21 години и без пречка да получи ловен лиценз."}, {"q": "“Öğrenci Avcı Adayı” için yaş şartı nedir?", "a": "18 yaşını doldurmuş ve 22 yaşından gün almamış olmak.", "bg": "Кандидат-ученик ловец: навършени 18 години и все още не е навлязъл в 22-рата си година."}, {"q": "Av Ruhsatı almak için temel şartlar nelerdir?", "a": "21 yaşını doldurmak, ruhsat almaya engeli bulunmamak, avcılık eğitimini tamamlamak ve sınavda başarılı olmak.", "bg": "За ловен лиценз: 21+, без законова пречка, завършено обучение и успешно положен изпит."}, {"q": "Tüzüğe göre “Av Hayvanları” hangi grupları kapsar?", "a": "Ova tavşanı ve av kuşlarını.", "bg": "Ловните животни по тази наредба включват полски заек и ловни птици."}, {"q": "Tüzükte sayılan av kuşlarından bazıları hangileridir?", "a": "Turaç, sülün, keklik, cikla, culluk, bıldırcın, üveyik, yaban güvercini, fassa, saksağan ve karga.", "bg": "Запомни списъка с ловни птици — това е типичен въпрос за запаметяване."}, {"q": "Merkezi Av Komisyonu (MAK) hangi bakanlık bünyesinde kurulur?", "a": "İçişleri Bakanlığı bünyesinde.", "bg": "Централната ловна комисия е към Министерството на вътрешните работи."}, {"q": "Avcı Eğitim Komisyonuna en fazla kaç ücretli eğitmen atanabilir?", "a": "En fazla 5 ücretli eğitmen.", "bg": "Максимум 5 платени обучители."}, {"q": "Ücretli eğitmenlere ek olarak en fazla kaç gönüllü yardımcı eğitmen atanabilir?", "a": "En fazla 10 gönüllü yardımcı eğitmen.", "bg": "Допълнително могат да има максимум 10 доброволни помощник-инструктори."}, {"q": "Avcı Eğitim Komisyonu toplamda en fazla kaç kişiden oluşabilir?", "a": "5 ücretli + 10 yardımcı olmak üzere en fazla 15 kişi.", "bg": "Общо максимум 15 души."}, {"q": "Veterinerlik alanındaki eğitmen için ne aranır?", "a": "Veteriner Hekimliği eğitimi almış olmak ve eğitim verecek nitelikte olduğunu MAK’a kanıtlamak.", "bg": "Изисква се ветеринарно образование и доказана годност за преподаване."}, {"q": "Orman veya Çevre eğitmeni için temel eğitim şartı nedir?", "a": "Orman veya Çevre alanında yükseköğrenim lisansına sahip olmak.", "bg": "Трябва висше образование в горско дело или околна среда."}, {"q": "Ateşli silah eğitmeni için hangi deneyimlerden biri yeterli olabilir?", "a": "Ateşli silah kullanan bir birimde çalışmış olmak, 10 yıl ateşli silahla ilgili görev yaptığını kanıtlamak veya eğitim verebilecek nitelikte olduğunu MAK’a kanıtlamak.", "bg": "За оръжейния инструктор има няколко алтернативни начина да докаже опит."}, {"q": "Sağlık eğitmeni hangi konularda eğitim verebilmelidir?", "a": "Yaralanma, yılan sokması, kırık ve benzeri sağlık/ilk yardım konularında.", "bg": "Наранявания, ухапване от змия, счупвания и други теми по първа помощ."}, {"q": "Avcılık alanındaki eğitmen için asgari avcılık deneyimi kaç yıldır?", "a": "En az 5 yıl.", "bg": "Минимум 5 години ловен опит."}, {"q": "Komisyon üyeleri için genel öğrenim şartı nedir?", "a": "En az lise mezunu olmak.", "bg": "Поне завършено средно образование."}, {"q": "Komisyon üyelerinde ateşli silah mevzuatı açısından hangi şart aranır?", "a": "Ateşli silahlarla ilgili yasaya aykırı/suç oluşturan eylemlerden hüküm giymemiş olmak.", "bg": "Да няма осъждане за нарушения/престъпления по закона за огнестрелните оръжия."}, {"q": "Avcı eğitimleri nerelerde yapılabilir?", "a": "MAK tarafından belirlenen okul, atış poligonu, arazi ve diğer toplantı yerlerinde; ayrıca Bakanlar Kurulunca belirlenen eğitim avlağında.", "bg": "Обучението може да е в определени училища, стрелбища, терени, места за срещи и учебни ловни райони."}, {"q": "Ateşli silahla ilgili uygulamalı atışlar nerede yapılır?", "a": "Atış poligonlarında.", "bg": "Практическата стрелба се прави на стрелбище."}, {"q": "Eğitim konularından biri ateşli silahlarla ilgili olarak neyi kapsar?", "a": "Ateşli silahın güvenli kullanımı, taşınması ve atış teknikleri.", "bg": "Безопасно използване, носене/пренасяне и техники на стрелба."}, {"q": "Avcı eğitiminde coğrafya ile ilgili ne öğretilir?", "a": "Genel coğrafyanın öğretilmesini mümkün kılacak bilgiler.", "bg": "Основни географски знания."}, {"q": "Sağlık ve ilk yardım eğitimi hangi durumları kapsar?", "a": "Her türlü kaza, yaralanma ve zehirlenmelere karşı sağlık ve ilk yardım bilgilerini.", "bg": "Злополуки, наранявания и отравяния — здравни знания и първа помощ."}, {"q": "Av haritası ile ilgili eğitimde ne öğrenilir?", "a": "Avlanmaya açık ve avlanmaya yasak bölgeler.", "bg": "Кои райони са разрешени и кои забранени за лов."}, {"q": "Doğal yaşamla ilgili eğitimde hangi hayvanlar ele alınır?", "a": "K.K.T.C.’nde doğal yaşamda mevcut olan hayvanlar.", "bg": "Животните, които се срещат естествено в Северен Кипър."}, {"q": "Doğal yaşam alanları ve bitki örtüsü konusunda avcıdan beklenen davranış nedir?", "a": "Hayvanların yaşam alanlarına ve doğal bitki örtüsüne zarar verecek hareketlerden kaçınmak.", "bg": "Да се избягват действия, които вредят на местообитанията и естествената растителност."}, {"q": "Birinci avcı eğitim dönemi hangi tarihler arasındadır?", "a": "16 Mart – 31 Temmuz.", "bg": "Първи период: 16 март – 31 юли."}, {"q": "İkinci avcı eğitim dönemi hangi tarihler arasındadır?", "a": "16 Eylül – 15 Ekim.", "bg": "Втори период: 16 септември – 15 октомври."}, {"q": "Eğitim başvurusunda kimlik için hangi belge istenir?", "a": "Kimlik Kartı fotokopisi.", "bg": "Фотокопие на личната карта."}, {"q": "Eğitim başvurusunda sağlık açısından hangi belge istenir?", "a": "Tam teşekküllü Devlet Hastanesi Sağlık Kurulu’ndan veya tam teşekküllü Özel Hastane’den sağlık raporu.", "bg": "Медицинско удостоверение от пълнопрофилна държавна или частна болница."}, {"q": "Eğitim başvurusunda kaç adet vesikalık fotoğraf istenir?", "a": "2 adet.", "bg": "Две паспортни снимки."}, {"q": "Eğitim başvurusunda adli sicil için hangi belge istenir?", "a": "Polis Genel Müdürlüğü’nden Sabıka Kayıt Belgesi.", "bg": "Свидетелство за съдимост/полицейска справка."}, {"q": "Avcı Adayı eğitim başvurusunda ayrıca hangi silah belgesini sunar?", "a": "Ateşli Silah Tasarruf Belgesi.", "bg": "Кандидатът за ловец представя и документ за притежание на огнестрелно оръжие."}, {"q": "Daha önce Av Ruhsatı sahibi olanlar başvuruda hangi ek belgeleri sunar?", "a": "Eski Av Ruhsatı ve Ateşli Silah Tasarruf Belgesi.", "bg": "Стария ловен лиценз и документа за притежание на оръжие."}, {"q": "Avcı sınavları hangi şekillerde yapılabilir?", "a": "Yazılı ve/veya sözlü ve/veya uygulamalı.", "bg": "Писмен, устен и/или практически изпит."}, {"q": "Sınavın yeri ve zamanı kim tarafından belirlenir?", "a": "Avcı Eğitim Komisyonu tarafından.", "bg": "Определя се от Комисията за обучение на ловци."}, {"q": "Sınavı geçen öğrenci avcı adayına hangi belge verilir?", "a": "Öğrenci Avcı Belgesi.", "bg": "Издава се „Öğrenci Avcı Belgesi“."}, {"q": "Sınavı geçen avcı adayına hangi belge verilir?", "a": "Av Ruhsatı Çıkarabilir Belgesi.", "bg": "Издава се документ, че лицето може да извади ловен лиценз."}, {"q": "Kaç yıl üst üste avlanma belgesini yenilemeyen avcı yeniden eğitime ve sınava tabi tutulur?", "a": "3 yıl.", "bg": "При 3 последователни години без подновяване — отново обучение и изпит."}, {"q": "Tüzüğün yürütülmesinden hangi kurum sorumludur?", "a": "İçişleri ile ilgili Bakanlığa bağlı Merkezi Av Komisyonu.", "bg": "Изпълнението е от Централната ловна комисия към ресорното Министерство на вътрешните работи."}, {"q": "Tüzük ne zaman yürürlüğe girer?", "a": "Resmî Gazete’de yayımlandığı tarihten başlayarak.", "bg": "От датата на публикуването му в Държавен вестник."}];
+const quizBank = [["Avcı Adayı için asgari yaş kaçtır?", ["18", "20", "21", "22"], 2], ["Öğrenci Avcı Adayı hangi yaş grubundadır?", ["16–18", "18 yaşını doldurmuş, 22 yaşından gün almamış", "21–25", "22 yaş ve üzeri"], 1], ["Avcı Eğitim Komisyonuna en fazla kaç ücretli eğitmen atanabilir?", ["3", "5", "8", "10"], 1], ["En fazla kaç gönüllü yardımcı eğitmen atanabilir?", ["5", "8", "10", "15"], 2], ["Komisyon toplamda en fazla kaç kişiden oluşabilir?", ["10", "12", "15", "20"], 2], ["Avcılık alanındaki eğitmen için asgari avcılık deneyimi kaç yıldır?", ["3", "5", "8", "10"], 1], ["Komisyon üyeleri için asgari öğrenim şartı nedir?", ["İlkokul", "Ortaokul", "Lise", "Üniversite"], 2], ["Uygulamalı atışlar nerede yapılır?", ["Her açık arazide", "Atış poligonunda", "Avlanmaya açık bölgede", "Polis karakolunda"], 1], ["Birinci eğitim dönemi hangisidir?", ["1 Ocak–31 Mart", "16 Mart–31 Temmuz", "1 Haziran–31 Ağustos", "16 Eylül–15 Ekim"], 1], ["İkinci eğitim dönemi hangisidir?", ["1 Ağustos–31 Ağustos", "1 Eylül–30 Kasım", "16 Eylül–15 Ekim", "1 Ekim–31 Aralık"], 2], ["Başvuruda kaç vesikalık fotoğraf istenir?", ["1", "2", "3", "4"], 1], ["Sabıka Kayıt Belgesi nereden alınır?", ["Belediye", "Polis Genel Müdürlüğü", "Avcılık Federasyonu", "Hastane"], 1], ["Avcı Adayı ayrıca hangi belgeyi sunar?", ["Pasaport", "Sürücü belgesi", "Ateşli Silah Tasarruf Belgesi", "Öğrenci belgesi"], 2], ["Sınavlar hangi biçimde yapılabilir?", ["Sadece yazılı", "Sadece sözlü", "Sadece uygulamalı", "Yazılı ve/veya sözlü ve/veya uygulamalı"], 3], ["Sınav yerini ve zamanını kim belirler?", ["Belediye", "Avcı Eğitim Komisyonu", "Polis Genel Müdürlüğü", "Avcılık Birliği"], 1], ["Başarılı öğrenci avcı adayına hangi belge verilir?", ["Av Ruhsatı", "Öğrenci Avcı Belgesi", "Silah Ruhsatı", "Sağlık Belgesi"], 1], ["Başarılı avcı adayına hangi belge verilir?", ["Av Ruhsatı Çıkarabilir Belgesi", "Öğrenci Avcı Belgesi", "Sabıka Kayıt Belgesi", "Atış Belgesi"], 0], ["Kaç yıl üst üste avlanma belgesini yenilemeyen avcı tekrar eğitim/sınava tabi tutulur?", ["1", "2", "3", "5"], 2], ["Av haritası eğitiminde ne öğrenilir?", ["Sadece köy sınırları", "Açık ve yasak avlanma bölgeleri", "Sadece yollar", "Sadece sulak alanlar"], 1], ["Doğal yaşam alanları konusunda doğru yaklaşım hangisidir?", ["Bitki örtüsünü temizlemek", "Yaşam alanlarına ve bitki örtüsüne zarar vermemek", "Sadece av hayvanlarını korumak", "Araçla her alana girmek"], 1], ["Av Hayvanları tanımı hangisidir?", ["Sadece kuşlar", "Sadece ova tavşanı", "Ova tavşanı ve av kuşları", "Tüm yabani hayvanlar"], 2], ["Merkezi Av Komisyonu hangi bakanlık bünyesindedir?", ["Sağlık Bakanlığı", "Tarım Bakanlığı", "İçişleri Bakanlığı", "Eğitim Bakanlığı"], 2], ["Sağlık eğitimi hangi konuları kapsar?", ["Sadece spor yaralanmaları", "Kaza, yaralanma ve zehirlenmelerde sağlık ve ilk yardım", "Sadece yılan sokması", "Sadece kırıklar"], 1], ["Ateşli silah eğitiminin kapsamı hangisidir?", ["Sadece nişan alma", "Güvenli kullanım, taşıma ve atış teknikleri", "Sadece silah temizliği", "Sadece av tüfeği satın alma"], 1], ["Tüzük ne zaman yürürlüğe girer?", ["İmzalandıktan 30 gün sonra", "Yılbaşında", "Resmî Gazete’de yayımlandığı tarihte", "Sınav döneminde"], 2]];
+
+let order = [...Array(cards.length).keys()];
+let pos = 0;
+let onlyUnknown = false;
+const state = JSON.parse(localStorage.getItem("kktcAvciProgress") || "{}");
+
+const $ = id => document.getElementById(id);
+function save() { localStorage.setItem("kktcAvciProgress", JSON.stringify(state)); updateStats(); }
+function currentList() {
+  if (!onlyUnknown) return order;
+  const x = order.filter(i => state[i] !== "known");
+  return x.length ? x : order;
+}
+function renderCard() {
+  const list = currentList();
+  if (pos >= list.length) pos = 0;
+  const i = list[pos], c = cards[i];
+  $("card").classList.remove("revealed");
+  $("label").textContent = "SORU";
+  $("question").textContent = c.q;
+  $("answer").textContent = c.a;
+  $("bg").textContent = "BG: " + c.bg;
+  $("num").textContent = `${pos+1} / ${list.length}`;
+  $("flip").textContent = "Cevabı göster";
+}
+function updateStats() {
+  const known = Object.values(state).filter(v=>v==="known").length;
+  const unknown = Object.values(state).filter(v=>v==="unknown").length;
+  $("sTotal").textContent = cards.length;
+  $("sKnown").textContent = known;
+  $("sUnknown").textContent = unknown;
+}
+function next() { const len=currentList().length; pos=(pos+1)%len; renderCard(); }
+function flip() {
+  const el=$("card"); el.classList.toggle("revealed");
+  const rev=el.classList.contains("revealed");
+  $("label").textContent = rev ? "CEVAP" : "SORU";
+  $("flip").textContent = rev ? "Soruyu göster" : "Cevabı göster";
+}
+$("card").onclick=flip; $("flip").onclick=flip;
+$("know").onclick=()=>{ const i=currentList()[pos]; state[i]="known"; save(); next(); };
+$("dont").onclick=()=>{ const i=currentList()[pos]; state[i]="unknown"; save(); next(); };
+$("shuffle").onclick=()=>{ order.sort(()=>Math.random()-.5); pos=0; renderCard(); };
+$("filterUnknown").onclick=()=>{ onlyUnknown=!onlyUnknown; pos=0; $("filterUnknown").textContent=onlyUnknown?"Tüm kartlar":"Sadece bilmediklerim"; renderCard(); };
+$("reset").onclick=()=>{ if(confirm("Tüm ilerleme silinsin mi?")){ for(const k in state) delete state[k]; save(); renderCard(); } };
+
+$("tabCards").onclick=()=>{ $("cardsView").classList.remove("hidden"); $("quizView").classList.add("hidden"); $("tabCards").classList.add("active"); $("tabQuiz").classList.remove("active"); };
+$("tabQuiz").onclick=()=>{ $("cardsView").classList.add("hidden"); $("quizView").classList.remove("hidden"); $("tabQuiz").classList.add("active"); $("tabCards").classList.remove("active"); if(!quiz.length) startQuiz(); };
+
+let quiz=[], qi=0, score=0, locked=false;
+function startQuiz() {
+  quiz=[...quizBank].sort(()=>Math.random()-.5).slice(0,20);
+  qi=0; score=0; locked=false;
+  $("quizRestart").classList.add("hidden");
+  renderQuiz();
+}
+function renderQuiz() {
+  locked=false; $("quizResult").textContent=""; $("quizNext").classList.add("hidden");
+  if(qi>=quiz.length) {
+    $("quizQ").textContent=`Bitti! Sonuç: ${score} / ${quiz.length}`;
+    $("quizOptions").innerHTML="";
+    $("quizCount").textContent="Deneme tamamlandı";
+    $("quizScore").textContent=`%${Math.round(score/quiz.length*100)}`;
+    $("quizProgress").style.width="100%";
+    $("quizRestart").classList.remove("hidden"); return;
+  }
+  const [q,opts,correct]=quiz[qi];
+  $("quizCount").textContent=`Soru ${qi+1} / ${quiz.length}`;
+  $("quizScore").textContent=`Puan: ${score}`;
+  $("quizProgress").style.width=`${qi/quiz.length*100}%`;
+  $("quizQ").textContent=q;
+  const box=$("quizOptions"); box.innerHTML="";
+  opts.forEach((o,idx)=>{
+    const b=document.createElement("button"); b.className="option"; b.textContent=o;
+    b.onclick=()=>answerQuiz(idx,b); box.appendChild(b);
+  });
+}
+function answerQuiz(idx,btn) {
+  if(locked) return; locked=true;
+  const correct=quiz[qi][2]; const buttons=[...document.querySelectorAll(".option")];
+  buttons[correct].classList.add("correct");
+  if(idx===correct) { score++; $("quizResult").textContent="Doğru ✓"; }
+  else { btn.classList.add("wrong"); $("quizResult").textContent="Yanlış — doğru cevabı yeşil işaretledim."; }
+  $("quizScore").textContent=`Puan: ${score}`;
+  $("quizNext").classList.remove("hidden");
+}
+$("quizNext").onclick=()=>{qi++;renderQuiz();};
+$("quizRestart").onclick=startQuiz;
+
+updateStats(); renderCard();
+</script>
+</body>
+</html>
